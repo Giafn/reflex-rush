@@ -1,0 +1,86 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  hostName     String
+  totalRounds  Int      @default(5)
+  status       RoomStatus @default(LOBBY)
+  currentRound Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  players Player[]
+  rounds  Round[]
+
+  @@map("rooms")
+}
+
+model Player {
+  id          String   @id @default(cuid())
+  roomId      String
+  name        String
+  totalScore  Int      @default(0)
+  isEliminated Boolean @default(false)
+  isConnected Boolean  @default(true)
+  joinedAt    DateTime @default(now())
+
+  room   Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  scores Score[]
+
+  @@map("players")
+}
+
+model Round {
+  id          String    @id @default(cuid())
+  roomId      String
+  roundNumber Int
+  type        RoundType
+  delayMs     Int?      // For DELAY type: ms before tap is valid
+  startedAt   DateTime?
+  endedAt     DateTime?
+
+  room   Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  scores Score[]
+
+  @@map("rounds")
+}
+
+model Score {
+  id             String   @id @default(cuid())
+  playerId       String
+  roundId        String
+  reactionTimeMs Int?
+  pointsEarned   Int      @default(0)
+  penaltyApplied Boolean  @default(false)
+  tapped         Boolean  @default(false)
+  submittedAt    DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  round  Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, roundId])
+  @@map("scores")
+}
+
+enum RoomStatus {
+  LOBBY
+  COUNTDOWN
+  PLAYING
+  LEADERBOARD
+  FINISHED
+}
+
+enum RoundType {
+  TAP
+  DONT_TAP
+  DELAY
+}
