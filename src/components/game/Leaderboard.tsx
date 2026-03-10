@@ -26,11 +26,11 @@ export function Leaderboard({
     <div className="w-full max-w-lg">
       {(currentRound !== undefined || totalRounds !== undefined) && (
         <div className="flex justify-between items-center mb-4">
-          <span className="font-orbitron text-yellow-400 text-xs tracking-[3px] uppercase">
+          <span className="font-orbitron text-yellow-400 text-sm tracking-[3px] uppercase font-bold">
             Leaderboard
           </span>
           {currentRound !== undefined && totalRounds !== undefined && (
-            <span className="font-orbitron text-gray-600 text-xs">
+            <span className="font-orbitron text-gray-500 text-sm font-semibold">
               Ronde {currentRound}/{totalRounds}
             </span>
           )}
@@ -43,7 +43,7 @@ export function Leaderboard({
             key={player.id}
             layout
             initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: player.isEliminated ? 0.35 : 1, x: 0 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.05 }}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl mb-2 border transition-all ${
               i === 0
@@ -55,8 +55,8 @@ export function Leaderboard({
           >
             {/* Rank */}
             <span
-              className={`font-orbitron w-8 text-center flex-shrink-0 ${
-                compact ? "text-xs" : "text-sm"
+              className={`font-orbitron w-10 text-center flex-shrink-0 ${
+                compact ? "text-sm" : "text-lg"
               } ${
                 i === 0
                   ? "text-yellow-400"
@@ -73,7 +73,7 @@ export function Leaderboard({
             {/* Avatar */}
             {!compact && (
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black font-bold text-xs flex-shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-black font-bold text-sm flex-shrink-0"
                 style={{
                   background:
                     i === 0
@@ -88,8 +88,8 @@ export function Leaderboard({
             {/* Name */}
             <span
               className={`flex-1 font-dm font-semibold truncate ${
-                compact ? "text-sm" : "text-base"
-              } ${player.isEliminated ? "text-gray-600 line-through" : "text-gray-200"}`}
+                compact ? "text-base" : "text-lg"
+              } text-gray-200`}
             >
               {player.name}
               {!player.isConnected && (
@@ -100,7 +100,7 @@ export function Leaderboard({
             {/* Score */}
             <span
               className={`font-orbitron font-bold flex-shrink-0 ${
-                compact ? "text-sm" : "text-base"
+                compact ? "text-base" : "text-xl"
               } ${i === 0 ? "text-yellow-400" : "text-green-400"}`}
             >
               {player.totalScore.toLocaleString()}

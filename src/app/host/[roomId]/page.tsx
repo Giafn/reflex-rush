@@ -87,6 +87,7 @@ export default function HostRoomPage() {
         setStatus("PLAYING");
         setCurrentRound(round as Round);
         setDelayRevealed(round.type !== "DELAY");
+        setRoom((prev) => prev ? { ...prev, currentRound: (round as Round).roundNumber } : prev);
         play("go");
       }),
       on("game:delay-reveal", () => {
@@ -115,6 +116,13 @@ export default function HostRoomPage() {
     setTimeout(() => setStartLoading(false), 2000);
   }, [room, emit]);
 
+  const handleEndGame = useCallback(() => {
+    if (!room || status === "FINISHED") return;
+    if (confirm("Yakinkan ingin mengakhiri game?")) {
+      emit("host:end-game", { roomId: room.id });
+    }
+  }, [room, status, emit]);
+
   const joinUrl = typeof window !== "undefined"
     ? `${window.location.origin}/play?code=${room?.code}`
     : "";
@@ -123,6 +131,7 @@ export default function HostRoomPage() {
   if (!room) return <ErrorScreen />;
 
   const roundConfig = currentRound ? ROUND_CONFIG[currentRound.type] : null;
+  const playersList = players || [];
 
   return (
     <main
@@ -146,9 +155,9 @@ export default function HostRoomPage() {
               </h1>
               <p className="text-gray-500 mb-10">Scan QR code atau masukkan kode untuk bergabung</p>
 
-              <div className="flex items-center justify-center gap-12 mb-10">
-                {joinUrl && <QRCode value={joinUrl} size={180} />}
-                <div>
+              <div className="flex flex-col items-center gap-6 mb-10">
+                {joinUrl && <QRCode value={joinUrl} size={220} />}
+                <div className="text-center">
                   <p className="text-xs text-gray-500 tracking-widest mb-2">KODE ROOM</p>
                   <div className="font-orbitron font-black text-6xl text-green-400 tracking-widest glow-green">
                     {room.code}
@@ -160,7 +169,7 @@ export default function HostRoomPage() {
               <div className="flex items-center justify-center gap-2 mb-8 text-green-400">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                 <span className="font-orbitron text-sm tracking-widest">
-                  {players.length} PESERTA SIAP
+                  {playersList.length} PESERTA SIAP
                 </span>
               </div>
 
@@ -201,10 +210,10 @@ export default function HostRoomPage() {
               exit={{ opacity: 0 }}
               className="flex flex-col items-center gap-6"
             >
-              <h2 className="font-orbitron text-2xl text-yellow-400 tracking-widest">
+              <h2 className="font-orbitron text-4xl text-yellow-400 tracking-widest font-black">
                 ⭐ HASIL RONDE {room.currentRound}
               </h2>
-              <Leaderboard players={players} currentRound={room.currentRound} totalRounds={room.totalRounds} />
+              <Leaderboard players={playersList} currentRound={room.currentRound} totalRounds={room.totalRounds} />
             </motion.div>
           )}
 
@@ -222,7 +231,7 @@ export default function HostRoomPage() {
               <div className="font-orbitron text-5xl text-green-400 glow-green mb-10">
                 {winner.totalScore.toLocaleString()} pts
               </div>
-              <Leaderboard players={players} currentRound={room.totalRounds} totalRounds={room.totalRounds} />
+              <Leaderboard players={playersList} currentRound={room.totalRounds} totalRounds={room.totalRounds} />
               <a
                 href="/"
                 className="inline-block mt-8 px-8 py-3 rounded-xl font-dm font-bold text-black bg-gradient-to-r from-green-400 to-blue-400 hover:opacity-90 transition-all"
@@ -236,16 +245,25 @@ export default function HostRoomPage() {
 
       {/* ─── RIGHT: Sidebar ─── */}
       <div className="w-56 bg-black/30 border-l border-white/[0.05] p-4 flex flex-col gap-3">
+        {/* End Game Button */}
+        {status !== "FINISHED" && (
+          <button
+            onClick={handleEndGame}
+            className="w-full px-4 py-2 rounded-xl font-dm font-bold text-xs text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-all"
+          >
+            ⏹ Selesaikan Game
+          </button>
+        )}
+
         <p className="font-orbitron text-xs text-gray-600 tracking-widest">LIVE PLAYERS</p>
         <div className="flex-1 overflow-y-auto space-y-2">
-          {[...players]
+          {[...playersList]
             .sort((a, b) => b.totalScore - a.totalScore)
             .slice(0, 12)
             .map((p) => (
               <div
                 key={p.id}
                 className="flex justify-between items-center px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.04]"
-                style={{ opacity: p.isEliminated ? 0.3 : 1 }}
               >
                 <span className="text-gray-300 font-dm text-xs truncate flex-1">{p.name}</span>
                 <span className="font-orbitron text-green-400 text-xs ml-2">{p.totalScore}</span>

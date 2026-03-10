@@ -76,6 +76,7 @@ export interface ClientToServerEvents {
   "host:create-room": (data: { hostName: string; totalRounds: number }, cb: (room: Room) => void) => void;
   "host:join-room": (data: { roomId: string }, cb: (result: { room: Room } | { error: string }) => void) => void;
   "host:start-game": (data: { roomId: string }) => void;
+  "host:end-game": (data: { roomId: string }) => void;
   "host:next-round": (data: { roomId: string }) => void;
 
   // Player actions
@@ -114,8 +115,8 @@ export const ROUND_CONFIG: Record<RoundType, {
     penalty: true,
   },
   DELAY: {
-    label: "TUNGGU... lalu TAP!",
-    sublabel: "Sabar, tunggu sinyal GO!",
+    label: "TAP!",
+    sublabel: "GO!",
     color: "#FFD700",
     bg: "#1a1200",
     emoji: "⏳",
@@ -127,11 +128,13 @@ export const ROUND_CONFIG: Record<RoundType, {
 export const calcScore = (reactionMs: number, type: RoundType, tapped: boolean): number => {
   switch (type) {
     case "TAP":
-      return tapped ? Math.max(50, 1000 - Math.floor(reactionMs)) : 0;
+      // Faster = more points: 100ms = 900pts, 500ms = 500pts, 1000ms = 0pts
+      return tapped ? Math.max(0, 1000 - Math.floor(reactionMs)) : 0;
     case "DONT_TAP":
       return tapped ? -500 : 300;
     case "DELAY":
-      return tapped ? Math.max(0, 500 - Math.floor(reactionMs * 0.5)) : 0;
+      // Faster = more points: 100ms = 450pts, 300ms = 350pts, 500ms = 250pts
+      return tapped ? Math.max(50, 500 - Math.floor(reactionMs)) : 0;
     default:
       return 0;
   }

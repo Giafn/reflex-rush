@@ -92,6 +92,7 @@ export default function PlayerGamePage() {
         setTapped(false);
         setFeedback(null);
         setDelayRevealed(round.type !== "DELAY");
+        setRoom((prev) => prev ? { ...prev, currentRound: (round as Round).roundNumber } : prev);
         play("go");
       }),
       on("game:delay-reveal", () => {
@@ -114,10 +115,6 @@ export default function PlayerGamePage() {
         play("success");
         showFeedback({ type: "success", message: `+${points} pts ⚡ ${formatMs(reactionMs)}` });
       }),
-      on("tap:penalty", ({ points }) => {
-        play("fail");
-        showFeedback({ type: "fail", message: `${points} pts 💀 KENA JEBAKAN!` });
-      }),
       on("tap:too-early", () => {
         play("fail");
         showFeedback({ type: "too-early", message: "-200 pts ⚠️ Terlalu Cepat!" });
@@ -134,7 +131,7 @@ export default function PlayerGamePage() {
   }
 
   const handleTap = useCallback((timestamp: number) => {
-    if (!playerId.current || !room || !currentRound || tapped || me?.isEliminated) return;
+    if (!playerId.current || !room || !currentRound || tapped) return;
     setTapped(true);
     play("tap");
     emit("player:tap", {
@@ -142,10 +139,12 @@ export default function PlayerGamePage() {
       playerId: playerId.current,
       clientTimestamp: timestamp,
     });
-  }, [room, currentRound, tapped, me, emit, play]);
+  }, [room, currentRound, tapped, emit, play]);
 
   const roundConfig = currentRound ? ROUND_CONFIG[currentRound.type] : null;
-  const myRank = [...players].sort((a, b) => b.totalScore - a.totalScore).findIndex((p) => p.id === playerId.current) + 1;
+  const myRank = players && players.length > 0
+    ? [...players].sort((a, b) => b.totalScore - a.totalScore).findIndex((p) => p.id === playerId.current) + 1
+    : 0;
 
   if (loading) return <LoadingScreen />;
   if (!room) return <ErrorScreen />;
@@ -252,8 +251,8 @@ export default function PlayerGamePage() {
               <p className="font-orbitron text-yellow-400 text-xs tracking-widest mb-2">GAME SELESAI</p>
               <p className="font-orbitron font-bold text-3xl text-white mb-1">{me?.name}</p>
               <p className="font-orbitron text-4xl text-green-400 glow-green mb-1">{me?.totalScore ?? 0}</p>
-              <p className="text-gray-500 text-sm mb-6">Peringkat #{myRank} dari {players.length}</p>
-              <Leaderboard players={players} currentRound={room.totalRounds} totalRounds={room.totalRounds} highlightId={playerId.current ?? undefined} />
+              <p className="text-gray-500 text-sm mb-6">Peringkat #{myRank} dari {players?.length ?? 0}</p>
+              <Leaderboard players={players || []} currentRound={room.totalRounds} totalRounds={room.totalRounds} highlightId={playerId.current ?? undefined} />
               <a href="/" className="inline-block mt-6 px-6 py-3 rounded-xl font-dm font-bold text-black bg-gradient-to-r from-green-400 to-blue-400">
                 🔄 Main Lagi
               </a>

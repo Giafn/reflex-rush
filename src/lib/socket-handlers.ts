@@ -2,14 +2,9 @@
 import type { Server as SocketIOServer, Socket } from "socket.io";
 import type { ServerToClientEvents, ClientToServerEvents } from "@/types/game";
 import { prisma } from "./prisma";
-import { startGame, recordTap } from "./game-engine";
+import { startGame, recordTap, stopGame } from "./game-engine";
 import { nanoid } from "nanoid";
-
-// Track round start times on server (roomId -> { roundId, startTime, delayMs, revealed })
-export const roundState = new Map<
-  string,
-  { roundId: string; startTime: number; delayMs: number | null; revealed: boolean; type: string }
->();
+import { roundState, getRoundState } from "./round-state";
 
 export function registerSocketHandlers(
   io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>
@@ -65,6 +60,35 @@ export function registerSocketHandlers(
       } catch (err) {
         console.error("[host:join-room]", err);
         cb({ error: "Gagal join room" });
+      }
+    });
+
+    // ─── Host: End Game (manual finish) ───────────────────────────────
+    socket.on("host:end-game", async ({ roomId }) => {
+      try {
+        // Stop all game timers first
+        stopGame(roomId);
+
+        const players = await prisma.player.findMany({
+          where: { roomId },
+          orderBy: { totalScore: "desc" },
+        });
+
+        await prisma.room.update({
+          where: { id: roomId },
+          data: { status: "FINISHED" },
+        });
+
+        io.to(roomId).emit("room:updated", { status: "FINISHED" });
+        io.to(roomId).emit("game:finished", {
+          players: players as any,
+          winner: players[0] as any,
+        });
+
+        console.log(`[Room ${roomId}] Game ended by host`);
+      } catch (err) {
+        console.error("[host:end-game]", err);
+        socket.emit("error", { message: "Gagal mengakhiri game" });
       }
     });
 
@@ -131,7 +155,7 @@ export function registerSocketHandlers(
     // ─── Player: Tap ─────────────────────────────────────────────────
     socket.on("player:tap", async ({ roomId, playerId, clientTimestamp }) => {
       try {
-        const state = roundState.get(roomId);
+        const state = getRoundState(roomId);
         if (!state) return;
 
         const serverTimestamp = Date.now();
@@ -144,7 +168,8 @@ export function registerSocketHandlers(
           state.startTime,
           state.type as any,
           state.delayMs,
-          state.revealed
+          state.revealed,
+          state.revealTime
         );
       } catch (err) {
         console.error("[player:tap]", err);
@@ -195,31 +220,6 @@ export function registerSocketHandlers(
         io.to(roomId).emit("player:left", playerId);
       }
       console.log(`[Socket] Disconnected: ${socket.id}`);
-    });
-  });
-
-  // Hook into game engine to track round state for tap validation
-  io.on("connection", (socket) => {
-    socket.onAny((event, ...args) => {
-      if (event === "game:round-start") {
-        const [{ round, serverTime }] = args;
-        roundState.set(round.roomId, {
-          roundId: round.id,
-          startTime: serverTime,
-          delayMs: round.delayMs ?? null,
-          revealed: round.type !== "DELAY",
-          type: round.type,
-        });
-      }
-      if (event === "game:delay-reveal") {
-        const [{ roundId }] = args;
-        for (const [roomId, state] of roundState.entries()) {
-          if (state.roundId === roundId) {
-            roundState.set(roomId, { ...state, revealed: true });
-            break;
-          }
-        }
-      }
     });
   });
 }

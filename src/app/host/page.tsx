@@ -13,6 +13,7 @@ export default function HostPage() {
 
   async function handleCreate() {
     if (!hostName.trim()) return toast.error("Masukkan nama host");
+    if (totalRounds < 1 || totalRounds > 50) return toast.error("Jumlah ronde harus 1-50");
     setLoading(true);
     try {
       const res = await fetch("/api/rooms", {
@@ -54,24 +55,19 @@ export default function HostPage() {
 
         {/* Total Rounds */}
         <div className="mb-8">
-          <label className="block text-xs text-gray-500 tracking-widest uppercase mb-3">
+          <label className="block text-xs text-gray-500 tracking-widest uppercase mb-2">
             Jumlah Ronde
           </label>
-          <div className="flex gap-3">
-            {[3, 5, 7, 10, 15].map((n) => (
-              <button
-                key={n}
-                onClick={() => setTotalRounds(n)}
-                className={`flex-1 py-3 rounded-xl font-orbitron font-bold text-lg border transition-all ${
-                  totalRounds === n
-                    ? "bg-green-500/15 border-green-500 text-green-400"
-                    : "bg-white/[0.04] border-white/10 text-gray-500 hover:border-white/20"
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
+          <input
+            type="number"
+            min="1"
+            max="50"
+            className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white font-dm outline-none focus:border-green-500/50 transition-colors"
+            placeholder="Masukkan jumlah ronde (1-50)"
+            value={totalRounds}
+            onChange={(e) => setTotalRounds(parseInt(e.target.value) || 1)}
+          />
+          <p className="text-xs text-gray-600 mt-2">Minimal 1, maksimal 50 ronde</p>
         </div>
 
         {/* Info box */}
