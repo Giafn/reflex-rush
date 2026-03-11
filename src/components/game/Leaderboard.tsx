@@ -30,7 +30,7 @@ export function Leaderboard({
             Leaderboard
           </span>
           {currentRound !== undefined && totalRounds !== undefined && (
-            <span className="font-orbitron text-gray-500 text-sm font-semibold">
+            <span className="font-orbitron text-muted-secondary text-sm font-semibold">
               Ronde {currentRound}/{totalRounds}
             </span>
           )}
@@ -91,7 +91,7 @@ export function Leaderboard({
             >
               {player.name}
               {!player.isConnected && (
-                <span className="text-xs text-gray-600 ml-1">(offline)</span>
+                <span className="text-xs text-muted-secondary ml-1">(offline)</span>
               )}
             </span>
 

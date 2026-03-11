@@ -6,6 +6,31 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSocket } from "@/hooks/useSocket";
 import { toast } from "sonner";
 
+// localStorage key for storing player name
+const STORAGE_KEY = "reflex-rush-player-name";
+
+// Get stored player name from localStorage
+function getStoredPlayerName() {
+  if (typeof window === "undefined") return null;
+  try {
+    const name = localStorage.getItem(STORAGE_KEY);
+    return name;
+  } catch (e) {
+    console.error("Error reading from localStorage:", e);
+  }
+  return null;
+}
+
+// Save player name to localStorage
+function saveStoredPlayerName(name: string) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, name);
+  } catch (e) {
+    console.error("Error saving to localStorage:", e);
+  }
+}
+
 function JoinForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -15,25 +40,36 @@ function JoinForm() {
   const [roomCode, setRoomCode] = useState(searchParams.get("code") || "");
   const [loading, setLoading] = useState(false);
 
+  // Load stored player name on mount
+  useEffect(() => {
+    const storedName = getStoredPlayerName();
+    if (storedName) {
+      setPlayerName(storedName);
+    }
+  }, []);
+
   function handleJoin() {
-    if (!playerName.trim()) return toast.error("Masukkan namamu");
+    const trimmedName = playerName.trim();
+    if (!trimmedName) return toast.error("Masukkan namamu");
     if (roomCode.length < 4) return toast.error("Kode room tidak valid");
     if (!isConnected) return toast.error("Koneksi terputus, coba lagi");
 
     setLoading(true);
     emit(
       "player:join",
-      { roomCode: roomCode.toUpperCase(), playerName: playerName.trim() },
+      { roomCode: roomCode.toUpperCase(), playerName: trimmedName },
       (result) => {
         if ("error" in result) {
           toast.error(result.error);
           setLoading(false);
           return;
         }
+        // Save player name to localStorage for future use
+        saveStoredPlayerName(trimmedName);
         // Store player info in sessionStorage for rejoin
         sessionStorage.setItem("playerId", result.player.id);
         sessionStorage.setItem("roomId", result.room.id);
-        sessionStorage.setItem("playerName", playerName.trim());
+        sessionStorage.setItem("playerName", trimmedName);
         router.push(`/play/${result.room.id}`);
       }
     );
@@ -47,10 +83,10 @@ function JoinForm() {
         </a>
 
         <h1 className="font-orbitron font-bold text-2xl mb-1">📱 Join Room</h1>
-        <p className="text-gray-500 text-sm mb-8">Masuk ke game yang sudah dibuat host</p>
+        <p className="text-muted-secondary text-sm mb-8">Masuk ke game yang sudah dibuat host</p>
 
         <div className="mb-5">
-          <label className="block text-xs text-gray-500 tracking-widest uppercase mb-2">
+          <label className="block text-xs text-muted-tertiary tracking-widest uppercase mb-2">
             Nama Kamu
           </label>
           <input
@@ -64,7 +100,7 @@ function JoinForm() {
         </div>
 
         <div className="mb-8">
-          <label className="block text-xs text-gray-500 tracking-widest uppercase mb-2">
+          <label className="block text-xs text-muted-tertiary tracking-widest uppercase mb-2">
             Kode Room
           </label>
           <input

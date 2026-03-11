@@ -38,11 +38,11 @@ export default function HostPage() {
         </a>
 
         <h1 className="font-orbitron font-bold text-2xl mb-2">⚙️ Setup Room</h1>
-        <p className="text-gray-500 text-sm mb-8">Konfigurasi game sebelum peserta bergabung</p>
+        <p className="text-muted-secondary text-sm mb-8">Konfigurasi game sebelum peserta bergabung</p>
 
         {/* Host Name */}
         <div className="mb-6">
-          <label className="block text-xs text-gray-500 tracking-widest uppercase mb-2">
+          <label className="block text-xs text-muted-tertiary tracking-widest uppercase mb-2">
             Nama Host
           </label>
           <input
@@ -55,7 +55,7 @@ export default function HostPage() {
 
         {/* Total Rounds */}
         <div className="mb-8">
-          <label className="block text-xs text-gray-500 tracking-widest uppercase mb-2">
+          <label className="block text-xs text-muted-tertiary tracking-widest uppercase mb-2">
             Jumlah Ronde
           </label>
           <input
@@ -67,16 +67,16 @@ export default function HostPage() {
             value={totalRounds}
             onChange={(e) => setTotalRounds(parseInt(e.target.value) || 1)}
           />
-          <p className="text-xs text-gray-600 mt-2">Minimal 1, maksimal 50 ronde</p>
+          <p className="text-xs text-muted-secondary mt-2">Minimal 1, maksimal 50 ronde</p>
         </div>
 
         {/* Info box */}
         <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 mb-8">
-          <p className="text-xs text-gray-500 leading-relaxed">
+          <p className="text-xs text-muted-secondary leading-relaxed">
             <span className="text-green-400">3 mode ronde</span> akan dimainkan secara acak:{" "}
-            <strong className="text-gray-300">TAP</strong> (kecepatan),{" "}
-            <strong className="text-gray-300">DON'T TAP</strong> (tahan refleks),{" "}
-            <strong className="text-gray-300">DELAY</strong> (timing). Server mencatat waktu — bukan HP peserta.
+            <strong className="text-muted">TAP</strong> (kecepatan),{" "}
+            <strong className="text-muted">DON'T TAP</strong> (tahan refleks),{" "}
+            <strong className="text-muted">DELAY</strong> (timing). Server mencatat waktu — bukan HP peserta.
           </p>
         </div>
 

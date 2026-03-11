@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export function CountdownDisplay({ count }: { count: number }) {
   return (
     <div className="flex flex-col items-center gap-4">
-      <p className="font-orbitron text-gray-500 text-sm tracking-[4px]">SIAPKAN DIRIMU</p>
+      <p className="font-orbitron text-muted-secondary text-sm tracking-[4px]">SIAPKAN DIRIMU</p>
       <AnimatePresence mode="popLayout">
         <motion.div
           key={count}

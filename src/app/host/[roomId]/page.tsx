@@ -201,18 +201,18 @@ export default function HostRoomPage() {
               <h1 className="font-orbitron font-black text-4xl md:text-5xl mb-2">
                 REFLEX <span className="text-green-400">RUSH</span>
               </h1>
-              <p className="text-gray-500 mb-6 md:mb-10">
+              <p className="text-muted-secondary mb-6 md:mb-10">
                 Scan QR code atau masukkan kode untuk bergabung
               </p>
 
               <div className="flex flex-col items-center gap-6 mb-6 md:mb-10">
                 {joinUrl && <QRCode value={joinUrl} size={220} />}
                 <div className="text-center w-full">
-                  <p className="text-xs text-gray-500 tracking-widest mb-2">KODE ROOM</p>
+                  <p className="text-xs text-muted-tertiary tracking-widest mb-2">KODE ROOM</p>
                   <div className="font-orbitron font-black text-5xl md:text-6xl text-green-400 tracking-widest glow-green">
                     {room.code}
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">{joinUrl}</p>
+                  <p className="text-xs text-muted-secondary mt-2">{joinUrl}</p>
                 </div>
               </div>
 
@@ -315,7 +315,7 @@ export default function HostRoomPage() {
 
         {/* Players List & Room Info - Mobile Hidden / Desktop Visible */}
         <div className="hidden md:flex flex-1 flex-col gap-3 overflow-hidden">
-          <p className="font-orbitron text-xs text-gray-600 tracking-widest">LIVE PLAYERS</p>
+          <p className="font-orbitron text-xs text-muted-tertiary tracking-widest">LIVE PLAYERS</p>
           <div className="flex-1 overflow-y-auto space-y-2">
             {[...playersList]
               .sort((a, b) => b.totalScore - a.totalScore)
@@ -325,7 +325,7 @@ export default function HostRoomPage() {
                   key={p.id}
                   className="flex justify-between items-center px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.04]"
                 >
-                  <span className="text-gray-300 font-dm text-xs truncate flex-1">{p.name}</span>
+                  <span className="text-muted font-dm text-xs truncate flex-1">{p.name}</span>
                   <span className="font-orbitron text-green-400 text-xs ml-2">{p.totalScore}</span>
                 </div>
               ))}
@@ -333,14 +333,14 @@ export default function HostRoomPage() {
 
           {/* Room info */}
           <div className="pt-3 border-t border-white/[0.05]">
-            <p className="text-xs text-gray-600 mb-1">Room Code</p>
+            <p className="text-xs text-muted-secondary mb-1">Room Code</p>
             <p className="font-orbitron text-green-400 text-xl tracking-widest">{room.code}</p>
-            <p className="text-xs text-gray-600 mt-2">
+            <p className="text-xs text-muted-secondary mt-2">
               {room.currentRound}/{room.totalRounds} ronde
             </p>
             <div className="flex items-center gap-1 mt-2">
               <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-400" : "bg-red-500"}`} />
-              <span className="text-xs text-gray-600">{isConnected ? "Live" : "Reconnecting..."}</span>
+              <span className="text-xs text-muted-secondary">{isConnected ? "Live" : "Reconnecting..."}</span>
             </div>
           </div>
         </div>
@@ -349,13 +349,13 @@ export default function HostRoomPage() {
         <div className="flex md:hidden items-center gap-3 justify-between flex-1 overflow-x-auto">
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isConnected ? "bg-green-400" : "bg-red-500"}`} />
-            <span className="text-xs text-gray-600">{playersList.length} Player</span>
+            <span className="text-xs text-muted-secondary">{playersList.length} Player</span>
           </div>
-          <div className="text-xs text-gray-600 whitespace-nowrap">
+          <div className="text-xs text-muted-secondary whitespace-nowrap">
             {room.currentRound}/{room.totalRounds}
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-600">{room.code}</span>
+            <span className="text-xs text-muted-secondary">{room.code}</span>
             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isConnected ? "bg-green-400" : "bg-red-500"}`} />
           </div>
         </div>
@@ -369,7 +369,7 @@ function LoadingScreen() {
     <main className="min-h-screen bg-game-dark flex items-center justify-center">
       <div className="text-center">
         <div className="w-10 h-10 border-2 border-green-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="font-orbitron text-gray-500 tracking-widest text-sm">LOADING ROOM...</p>
+        <p className="font-orbitron text-muted-secondary tracking-widest text-sm">LOADING ROOM...</p>
       </div>
     </main>
   );

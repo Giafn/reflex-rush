@@ -158,17 +158,17 @@ export default function PlayerGamePage() {
       {/* Header */}
       <div className="w-full flex justify-between items-center px-5 pt-5 pb-2">
         <div>
-          <p className="text-xs text-gray-600 tracking-widest">SKOR</p>
+          <p className="text-xs text-muted-secondary tracking-widest">SKOR</p>
           <p className="font-orbitron font-bold text-2xl text-green-400">{me?.totalScore ?? 0}</p>
         </div>
         <div className="text-center">
-          <p className="font-orbitron text-xs text-gray-600">{me?.name}</p>
+          <p className="font-orbitron text-xs text-muted-secondary">{me?.name}</p>
           {myRank > 0 && status !== "LOBBY" && (
-            <p className="text-xs text-gray-500">Rank #{myRank}</p>
+            <p className="text-xs text-muted-tertiary">Rank #{myRank}</p>
           )}
         </div>
         <div className="text-right">
-          <p className="text-xs text-gray-600 tracking-widest">RONDE</p>
+          <p className="text-xs text-muted-secondary tracking-widest">RONDE</p>
           <p className="font-orbitron font-bold text-2xl text-white">
             {room.currentRound}/{room.totalRounds}
           </p>
@@ -181,10 +181,10 @@ export default function PlayerGamePage() {
           {status === "LOBBY" && (
             <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
               <div className="text-5xl mb-4">⏳</div>
-              <p className="font-orbitron text-gray-400 tracking-widest text-sm">MENUNGGU HOST...</p>
+              <p className="font-orbitron text-muted tracking-widest text-sm">MENUNGGU HOST...</p>
               <div className="flex items-center justify-center gap-2 mt-4">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-xs text-gray-600">{players.length} peserta terhubung</span>
+                <span className="text-xs text-muted-secondary">{players.length} peserta terhubung</span>
               </div>
             </motion.div>
           )}
@@ -252,7 +252,7 @@ export default function PlayerGamePage() {
               <p className="font-orbitron text-yellow-400 text-xs tracking-widest mb-2">GAME SELESAI</p>
               <p className="font-orbitron font-bold text-3xl text-white mb-1">{me?.name}</p>
               <p className="font-orbitron text-4xl text-green-400 glow-green mb-1">{me?.totalScore ?? 0}</p>
-              <p className="text-gray-500 text-sm mb-6">Peringkat #{myRank} dari {players?.length ?? 0}</p>
+              <p className="text-muted-secondary text-sm mb-6">Peringkat #{myRank} dari {players?.length ?? 0}</p>
               <Leaderboard players={players || []} currentRound={room.totalRounds} totalRounds={room.totalRounds} highlightId={playerId.current ?? undefined} />
               <a href="/" className="inline-block mt-6 px-6 py-3 rounded-xl font-dm font-bold text-black bg-gradient-to-r from-green-400 to-blue-400">
                 🔄 Main Lagi
@@ -273,7 +273,7 @@ export default function PlayerGamePage() {
           />
         ) : (
           <div className="w-full h-44 rounded-3xl bg-white/[0.02] border border-white/[0.04] flex items-center justify-center opacity-30">
-            <span className="font-orbitron text-gray-600 text-2xl">TAP!</span>
+            <span className="font-orbitron text-muted-secondary text-2xl">TAP!</span>
           </div>
         )}
       </div>
@@ -286,7 +286,7 @@ function LoadingScreen() {
     <main className="min-h-screen bg-game-dark flex items-center justify-center">
       <div className="text-center">
         <div className="w-10 h-10 border-2 border-green-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="font-orbitron text-gray-500 tracking-widest text-sm">LOADING...</p>
+        <p className="font-orbitron text-muted-secondary tracking-widest text-sm">LOADING...</p>
       </div>
     </main>
   );

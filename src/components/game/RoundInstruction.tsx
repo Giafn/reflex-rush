@@ -43,7 +43,7 @@ export function RoundInstruction({ round, delayRevealed, duration }: RoundInstru
         >
           {showTapLabel ? config.label : "TUNGGU..."}
         </h2>
-        <p className="font-dm text-gray-500 mt-3 text-lg">{config.sublabel}</p>
+        <p className="font-dm text-muted-secondary mt-3 text-lg">{config.sublabel}</p>
       </motion.div>
 
       {/* Progress bar */}

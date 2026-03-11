@@ -10,6 +10,10 @@
     --color-gold: #FFD700;
     --color-blue: #00AAFF;
     --color-dark: #0A0A0F;
+    --color-muted: #6B7280;
+    --color-muted-light: #9CA3AF;
+    --color-bg-dark: #0A0A0F;
+    --color-bg-muted: rgba(255, 255, 255, 0.05);
   }
 
   * {
@@ -65,6 +69,19 @@
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
+  }
+
+  /* Better contrast text colors */
+  .text-muted {
+    color: #D1D5DB;
+  }
+
+  .text-muted-secondary {
+    color: #A5B4FC;
+  }
+
+  .text-muted-tertiary {
+    color: #8B5CF6;
   }
 }
 
