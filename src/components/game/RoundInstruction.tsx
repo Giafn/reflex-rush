@@ -16,13 +16,13 @@ export function RoundInstruction({ round, delayRevealed, duration }: RoundInstru
   const showTapLabel = round.type !== "DELAY" || delayRevealed;
 
   return (
-    <div className="flex flex-col items-center gap-6 text-center px-8">
+    <div className="flex flex-col items-center gap-6 text-center px-8 w-full max-w-2xl">
       {/* Emoji */}
       <motion.div
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 15 }}
-        className="text-7xl select-none"
+        className="text-7xl md:text-8xl select-none"
       >
         {config.emoji}
       </motion.div>
@@ -47,7 +47,7 @@ export function RoundInstruction({ round, delayRevealed, duration }: RoundInstru
       </motion.div>
 
       {/* Progress bar */}
-      <div className="w-64 h-1 rounded-full bg-white/10 overflow-hidden mt-4">
+      <div className="w-64 md:w-80 h-1 rounded-full bg-white/10 overflow-hidden mt-4">
         <motion.div
           className="h-full rounded-full"
           style={{ backgroundColor: config.color }}

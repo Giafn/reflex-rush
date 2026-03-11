@@ -74,12 +74,13 @@ export function registerSocketHandlers(
           orderBy: { totalScore: "desc" },
         });
 
-        await prisma.room.update({
+        const updatedRoom = await prisma.room.update({
           where: { id: roomId },
           data: { status: "FINISHED" },
+          include: { players: true, rounds: true },
         });
 
-        io.to(roomId).emit("room:updated", { status: "FINISHED" });
+        io.to(roomId).emit("room:updated", updatedRoom as any);
         io.to(roomId).emit("game:finished", {
           players: players as any,
           winner: players[0] as any,
@@ -211,7 +212,7 @@ export function registerSocketHandlers(
         // Get updated room and broadcast
         const updatedRoom = await prisma.room.findUnique({
           where: { id: roomId },
-          include: { players: true },
+          include: { players: true, rounds: true },
         });
 
         if (updatedRoom) {

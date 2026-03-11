@@ -23,7 +23,7 @@ export function Leaderboard({
   const sorted = [...players].sort((a, b) => b.totalScore - a.totalScore).slice(0, 10);
 
   return (
-    <div className="w-full max-w-lg">
+    <div className="w-full max-w-lg mx-auto">
       {(currentRound !== undefined || totalRounds !== undefined) && (
         <div className="flex justify-between items-center mb-4">
           <span className="font-orbitron text-yellow-400 text-sm tracking-[3px] uppercase font-bold">
@@ -55,9 +55,7 @@ export function Leaderboard({
           >
             {/* Rank */}
             <span
-              className={`font-orbitron w-10 text-center flex-shrink-0 ${
-                compact ? "text-sm" : "text-lg"
-              } ${
+              className={`font-orbitron w-10 text-center flex-shrink-0 text-lg ${
                 i === 0
                   ? "text-yellow-400"
                   : i === 1

@@ -38,6 +38,11 @@ export default function HostRoomPage() {
         setRoom(data);
         setPlayers(data.players || []);
         setStatus(data.status);
+        // If game is finished, calculate winner from players
+        if (data.status === "FINISHED" && data.players && data.players.length > 0) {
+          const sorted = [...data.players].sort((a, b) => b.totalScore - a.totalScore);
+          setWinner(sorted[0]);
+        }
         setLoading(false);
       })
       .catch(() => {
@@ -123,6 +128,47 @@ export default function HostRoomPage() {
     }
   }, [room, status, emit]);
 
+  const handleDownloadLeaderboard = useCallback(() => {
+    if (!room || players.length === 0) return;
+
+    const sorted = [...players].sort((a, b) => b.totalScore - a.totalScore);
+    const date = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+
+    let content = `═════════════════════════════════════════════════════════\n`;
+    content += `                    REFLEX RUSH - LEADERBOARD\n`;
+    content += `═════════════════════════════════════════════════════════\n\n`;
+    content += `Room Code  : ${room.code}\n`;
+    content += `Host Name  : ${room.hostName}\n`;
+    content += `Total Rounds: ${room.totalRounds}\n`;
+    content += `Total Players: ${players.length}\n`;
+    content += `Date       : ${date}\n`;
+    content += `\n───────────────────────────────────────────────────────────────\n`;
+    content += `  RANK  |  NAME                    |  SCORE  |  STATUS\n`;
+    content += `───────────────────────────────────────────────────────────────\n`;
+
+    sorted.forEach((player, i) => {
+      const rank = String(i + 1).padStart(4, ' ');
+      const name = player.name.substring(0, 20).padEnd(22, ' ');
+      const score = String(player.totalScore.toLocaleString()).padStart(6, ' ');
+      const status = player.isConnected ? 'Online ' : 'Offline';
+      content += `  ${rank} |  ${name} |  ${score}  |  ${status}\n`;
+    });
+
+    content += `───────────────────────────────────────────────────────────────\n`;
+    content += `\n🏆 PEMENANG: ${sorted[0]?.name || '-'} dengan ${sorted[0]?.totalScore.toLocaleString() || 0} poin\n`;
+    content += `\n═════════════════════════════════════════════════════════\n`;
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `reflex-rush-leaderboard-${room.code}-${Date.now()}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [room, players]);
+
   const joinUrl = typeof window !== "undefined"
     ? `${window.location.origin}/play?code=${room?.code}`
     : "";
@@ -132,14 +178,16 @@ export default function HostRoomPage() {
 
   const roundConfig = currentRound ? ROUND_CONFIG[currentRound.type] : null;
   const playersList = players || [];
+  // Calculate winner from sorted players if not set yet
+  const currentWinner = winner || (playersList.length > 0 ? [...playersList].sort((a, b) => b.totalScore - a.totalScore)[0] : null);
 
   return (
     <main
-      className="min-h-screen flex transition-colors duration-700"
+      className="min-h-screen flex flex-col md:flex-row transition-colors duration-700"
       style={{ background: roundConfig && status === "PLAYING" ? roundConfig.bg : "#0A0A0F" }}
     >
-      {/* ─── LEFT: Main Display ─── */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      {/* ─── MAIN DISPLAY ─── */}
+      <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <AnimatePresence mode="wait">
           {/* LOBBY */}
           {status === "LOBBY" && (
@@ -148,25 +196,27 @@ export default function HostRoomPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="text-center max-w-lg"
+              className="text-center w-full max-w-lg"
             >
-              <h1 className="font-orbitron font-black text-5xl mb-2">
+              <h1 className="font-orbitron font-black text-4xl md:text-5xl mb-2">
                 REFLEX <span className="text-green-400">RUSH</span>
               </h1>
-              <p className="text-gray-500 mb-10">Scan QR code atau masukkan kode untuk bergabung</p>
+              <p className="text-gray-500 mb-6 md:mb-10">
+                Scan QR code atau masukkan kode untuk bergabung
+              </p>
 
-              <div className="flex flex-col items-center gap-6 mb-10">
+              <div className="flex flex-col items-center gap-6 mb-6 md:mb-10">
                 {joinUrl && <QRCode value={joinUrl} size={220} />}
-                <div className="text-center">
+                <div className="text-center w-full">
                   <p className="text-xs text-gray-500 tracking-widest mb-2">KODE ROOM</p>
-                  <div className="font-orbitron font-black text-6xl text-green-400 tracking-widest glow-green">
+                  <div className="font-orbitron font-black text-5xl md:text-6xl text-green-400 tracking-widest glow-green">
                     {room.code}
                   </div>
                   <p className="text-xs text-gray-600 mt-2">{joinUrl}</p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2 mb-8 text-green-400">
+              <div className="flex items-center justify-center gap-2 mb-6 md:mb-8 text-green-400">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                 <span className="font-orbitron text-sm tracking-widest">
                   {playersList.length} PESERTA SIAP
@@ -176,7 +226,7 @@ export default function HostRoomPage() {
               <button
                 onClick={handleStartGame}
                 disabled={startLoading || players.length === 0}
-                className="px-12 py-4 rounded-xl font-dm font-bold text-xl text-black bg-gradient-to-r from-green-400 to-blue-400 hover:opacity-90 active:scale-95 transition-all disabled:opacity-40"
+                className="w-full md:w-auto px-12 py-4 rounded-xl font-dm font-bold text-xl text-black bg-gradient-to-r from-green-400 to-blue-400 hover:opacity-90 active:scale-95 transition-all disabled:opacity-40"
               >
                 {startLoading ? "Memulai..." : players.length === 0 ? "Tunggu Peserta..." : "▶ Mulai Game!"}
               </button>
@@ -208,9 +258,9 @@ export default function HostRoomPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center gap-6"
+              className="flex flex-col items-center gap-6 w-full"
             >
-              <h2 className="font-orbitron text-4xl text-yellow-400 tracking-widest font-black">
+              <h2 className="font-orbitron text-3xl md:text-4xl text-yellow-400 tracking-widest font-black text-center">
                 ⭐ HASIL RONDE {room.currentRound}
               </h2>
               <Leaderboard players={playersList} currentRound={room.currentRound} totalRounds={room.totalRounds} />
@@ -218,69 +268,95 @@ export default function HostRoomPage() {
           )}
 
           {/* FINISHED */}
-          {status === "FINISHED" && winner && (
+          {status === "FINISHED" && currentWinner && (
             <motion.div
               key="winner"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-center"
+              className="text-center w-full"
             >
-              <div className="text-8xl mb-4">🏆</div>
+              <div className="text-7xl md:text-8xl mb-4">🏆</div>
               <p className="font-orbitron text-yellow-400 text-sm tracking-widest mb-3">PEMENANG</p>
-              <h2 className="font-orbitron font-black text-5xl text-white mb-2">{winner.name}</h2>
-              <div className="font-orbitron text-5xl text-green-400 glow-green mb-10">
-                {winner.totalScore.toLocaleString()} pts
+              <h2 className="font-orbitron font-black text-4xl md:text-5xl text-white mb-2">{currentWinner.name}</h2>
+              <div className="font-orbitron text-4xl md:text-5xl text-green-400 glow-green mb-10">
+                {currentWinner.totalScore.toLocaleString()} pts
               </div>
               <Leaderboard players={playersList} currentRound={room.totalRounds} totalRounds={room.totalRounds} />
-              <a
-                href="/"
-                className="inline-block mt-8 px-8 py-3 rounded-xl font-dm font-bold text-black bg-gradient-to-r from-green-400 to-blue-400 hover:opacity-90 transition-all"
-              >
-                🔄 Main Lagi
-              </a>
+              <div className="flex flex-col md:flex-row gap-4 justify-center mt-8">
+                <button
+                  onClick={handleDownloadLeaderboard}
+                  className="w-full md:w-auto px-6 py-3 rounded-xl font-dm font-bold text-white bg-gray-700 hover:bg-gray-600 transition-all flex items-center justify-center gap-2"
+                >
+                  📥 Download Leaderboard
+                </button>
+                <a
+                  href="/"
+                  className="w-full md:w-auto px-8 py-3 rounded-xl font-dm font-bold text-black bg-gradient-to-r from-green-400 to-blue-400 hover:opacity-90 transition-all flex items-center justify-center"
+                >
+                  🔄 Main Lagi
+                </a>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* ─── RIGHT: Sidebar ─── */}
-      <div className="w-56 bg-black/30 border-l border-white/[0.05] p-4 flex flex-col gap-3">
+      {/* ─── SIDEBAR ─── */}
+      <div className="w-full md:w-64 lg:w-72 bg-black/30 border-t md:border-t-0 md:border-l border-white/[0.05] p-3 md:p-4 flex flex-row md:flex-col gap-2 md:gap-3">
         {/* End Game Button */}
         {status !== "FINISHED" && (
           <button
             onClick={handleEndGame}
-            className="w-full px-4 py-2 rounded-xl font-dm font-bold text-xs text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-all"
+            className="md:w-full w-auto px-4 py-2 rounded-xl font-dm font-bold text-xs text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-all whitespace-nowrap"
           >
             ⏹ Selesaikan Game
           </button>
         )}
 
-        <p className="font-orbitron text-xs text-gray-600 tracking-widest">LIVE PLAYERS</p>
-        <div className="flex-1 overflow-y-auto space-y-2">
-          {[...playersList]
-            .sort((a, b) => b.totalScore - a.totalScore)
-            .slice(0, 12)
-            .map((p) => (
-              <div
-                key={p.id}
-                className="flex justify-between items-center px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.04]"
-              >
-                <span className="text-gray-300 font-dm text-xs truncate flex-1">{p.name}</span>
-                <span className="font-orbitron text-green-400 text-xs ml-2">{p.totalScore}</span>
-              </div>
-            ))}
+        {/* Players List & Room Info - Mobile Hidden / Desktop Visible */}
+        <div className="hidden md:flex flex-1 flex-col gap-3 overflow-hidden">
+          <p className="font-orbitron text-xs text-gray-600 tracking-widest">LIVE PLAYERS</p>
+          <div className="flex-1 overflow-y-auto space-y-2">
+            {[...playersList]
+              .sort((a, b) => b.totalScore - a.totalScore)
+              .slice(0, 12)
+              .map((p) => (
+                <div
+                  key={p.id}
+                  className="flex justify-between items-center px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.04]"
+                >
+                  <span className="text-gray-300 font-dm text-xs truncate flex-1">{p.name}</span>
+                  <span className="font-orbitron text-green-400 text-xs ml-2">{p.totalScore}</span>
+                </div>
+              ))}
+          </div>
+
+          {/* Room info */}
+          <div className="pt-3 border-t border-white/[0.05]">
+            <p className="text-xs text-gray-600 mb-1">Room Code</p>
+            <p className="font-orbitron text-green-400 text-xl tracking-widest">{room.code}</p>
+            <p className="text-xs text-gray-600 mt-2">
+              {room.currentRound}/{room.totalRounds} ronde
+            </p>
+            <div className="flex items-center gap-1 mt-2">
+              <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-400" : "bg-red-500"}`} />
+              <span className="text-xs text-gray-600">{isConnected ? "Live" : "Reconnecting..."}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Room info */}
-        <div className="pt-3 border-t border-white/[0.05]">
-          <p className="text-xs text-gray-600 mb-1">Room Code</p>
-          <p className="font-orbitron text-green-400 text-xl tracking-widest">{room.code}</p>
-          <p className="text-xs text-gray-600 mt-2">
-            {room.currentRound}/{room.totalRounds} ronde
-          </p>
-          <div className="flex items-center gap-1 mt-2">
-            <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-400" : "bg-red-500"}`} />
-            <span className="text-xs text-gray-600">{isConnected ? "Live" : "Reconnecting..."}</span>
+        {/* Mobile: Compact Room Info Bar */}
+        <div className="flex md:hidden items-center gap-3 justify-between flex-1 overflow-x-auto">
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isConnected ? "bg-green-400" : "bg-red-500"}`} />
+            <span className="text-xs text-gray-600">{playersList.length} Player</span>
+          </div>
+          <div className="text-xs text-gray-600 whitespace-nowrap">
+            {room.currentRound}/{room.totalRounds}
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-gray-600">{room.code}</span>
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isConnected ? "bg-green-400" : "bg-red-500"}`} />
           </div>
         </div>
       </div>

@@ -73,8 +73,9 @@ export default function PlayerGamePage() {
       on("room:updated", (r) => {
         setRoom(r);
         setStatus(r.status);
-        setPlayers(r.players);
-        const m = r.players.find((p) => p.id === playerId.current);
+        setPlayers(r.players || []);
+        const playersArray = r.players || [];
+        const m = playersArray.find((p) => p.id === playerId.current);
         if (m) setMe(m);
       }),
       on("player:updated", (player) => {

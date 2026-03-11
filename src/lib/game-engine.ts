@@ -213,7 +213,7 @@ export async function finishGame(roomId: string) {
   const roomWithPlayers = await prisma.room.update({
     where: { id: roomId },
     data: { status: "FINISHED" },
-    include: { players: true },
+    include: { players: true, rounds: true },
   });
 
   const winner = players[0];
